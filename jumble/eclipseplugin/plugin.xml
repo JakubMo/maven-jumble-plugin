@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="jumble"
+   name="Jumble Plug-in"
+   version="1.0.0"
+   provider-name="Reel Two"
+   class="jumble.JumblePlugin">
+
+   <runtime>
+      <library name="jumble-eclipse.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.jdt.core"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.jdt.launching"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.ui.ide"/>
+   </requires>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            objectClass="org.eclipse.jdt.core.ICompilationUnit"
+            nameFilter="*.java"
+            id="jumble.contribution1">
+         <menu
+               label="Jumble"
+               path="additions"
+               id="jumble.menu1">
+            <separator
+                  name="group1">
+            </separator>
+         </menu>
+         <action
+               label="Jumble Class"
+               class="jumble.popup.actions.JumbleAction"
+               menubarPath="jumble.menu1/group1"
+               enablesFor="1"
+               id="jumble.newAction">
+         </action>
+      </objectContribution>
+      <objectContribution
+            id="jumble.contribution2"
+            nameFilter="*.java"
+            objectClass="org.eclipse.core.resources.IFile">
+         <menu
+               id="jumble.menu2"
+               label="Jumble">
+            <separator name="group2"/>
+         </menu>
+         <action
+               class="jumble.popup.actions.JumbleAction"
+               enablesFor="1"
+               id="jumble.fileAction"
+               label="Jumble Class"
+               menubarPath="jumble.menu2/group2"/>
+      </objectContribution>
+      <viewerContribution
+            id="jumble.contribution3"
+            targetID="#CompilationUnitEditorContext">
+         <menu
+               id="jumble.menu3"
+               label="Jumble">
+            <separator name="group3"/>
+         </menu>
+         <action
+               class="jumble.popup.actions.JumbleAction"
+               id="jumble.editorAction"
+               label="Jumble Class"
+               menubarPath="jumble.menu3/group3"/>
+      </viewerContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="jumble.preferences.JumblePreferencePage"
+            id="jumble.preferences.JumblePreferencePage"
+            name="Jumble"/>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer class="jumble.preferences.PreferenceInitializer"/>
+   </extension>
+
+</plugin>
