@@ -8,7 +8,6 @@ import jumble.JumblePlugin;
 import jumble.preferences.PreferenceConstants;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.IPath;
@@ -76,7 +75,7 @@ public class JumbleAction implements IObjectActionDelegate, IEditorActionDelegat
    */
   public void run(IAction action) {
     final IPreferenceStore prefs = JumblePlugin.getDefault().getPreferenceStore();
-    final String pluginLocation;
+    String pluginLocation = null;
     try {
       pluginLocation = JumblePlugin.getDefault().getPluginFolder().getAbsolutePath();
     } catch (IOException e) {
@@ -101,6 +100,7 @@ public class JumbleAction implements IObjectActionDelegate, IEditorActionDelegat
       ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(null, LAUNCH_NAME);
 
       // Use the default JRE
+      // System.err.println(JavaRuntime.getDefaultVMInstall().getInstallLocation().toString());
       workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_JRE_CONTAINER_PATH, JavaRuntime.getDefaultVMInstall().getInstallLocation()
           .toString());
 
@@ -109,16 +109,49 @@ public class JumbleAction implements IObjectActionDelegate, IEditorActionDelegat
 
       // Set up command line arguments
       String className = getClassName();
+      System.err.println("class: " + className);
 
       // Set up class paths
       workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, false);
-      List<String> classpath = new ArrayList<String>();
+      List classpath = new ArrayList();
       IPath jumbleJarPath = new Path(pluginLocation + "/jumble.jar");
       IRuntimeClasspathEntry jumbleJarEntry = JavaRuntime.newArchiveRuntimeClasspathEntry(jumbleJarPath);
       classpath.add(jumbleJarEntry.getMemento());
       workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, classpath);
       IJavaProject curProject = getJavaProject();
-      String classPath = getClasspath(curProject);
+
+      IClasspathEntry[] entries = curProject.getResolvedClasspath(true);
+
+      StringBuffer cpBuffer = new StringBuffer();
+
+      IWorkspaceRoot root = curProject.getProject().getWorkspace().getRoot();
+      IPath outputLocation = root.findMember(curProject.getOutputLocation()).getLocation();
+      System.err.println(outputLocation);
+      for (int i = 0; i < entries.length; i++) {
+        IPath path = entries[i].getPath();
+
+        IResource res = root.findMember(path);
+
+        final String curPath;
+
+        if (res == null) {
+          curPath = path.toOSString();
+        } else {
+          if (entries[i].getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+            curPath = outputLocation.toOSString();
+          } else {
+            curPath = res.getLocation().toOSString();
+          }
+        }
+
+        if (cpBuffer.length() == 0) {
+          cpBuffer.append(curPath);
+        } else {
+          cpBuffer.append(PATH_SEPARATOR + curPath);
+        }
+      }
+
+      System.err.println("CLASSPATH: " + cpBuffer);
 
       boolean verbose = prefs.getBoolean(PreferenceConstants.P_VERBOSE);
       boolean returnVals = prefs.getBoolean(PreferenceConstants.P_RETURNS);
@@ -129,7 +162,7 @@ public class JumbleAction implements IObjectActionDelegate, IEditorActionDelegat
       workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, "com.reeltwo.jumble.Jumble");
       workingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, (returnVals ? "-r " : "") + (inlineConstants ? "-k " : "")
           + (increments ? "-i " : "") + (verbose ? "-v " : "") + (constantPoolConstants ? "-w " : "") + (switchStatements ? "-j " : "")
-          + "--classpath \"" + classPath + "\" " + " " + extraArgs + " " + className);
+          + "--classpath \"" + cpBuffer + "\" " + " " + extraArgs + " " + className);
 
       // Now run...
       ILaunchConfiguration configuration = workingCopy.doSave();
@@ -138,39 +171,6 @@ public class JumbleAction implements IObjectActionDelegate, IEditorActionDelegat
     } catch (Exception e) {
       e.printStackTrace();
     }
-  }
-
-  private String getClasspath(IJavaProject curProject) throws JavaModelException {
-    IClasspathEntry[] entries = curProject.getResolvedClasspath(true);
-    StringBuffer cpBuffer = new StringBuffer();
-
-    IWorkspaceRoot root = curProject.getProject().getWorkspace().getRoot();
-    IPath outputLocation = root.findMember(curProject.getOutputLocation()).getLocation();
-    for (IClasspathEntry entry : entries) {
-      IPath path = entry.getPath();
-
-      IResource res = root.findMember(path);
-
-      final String curPath;
-      if (res == null) {
-        curPath = path.toOSString();
-      } else {
-        if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
-          curPath = outputLocation.toOSString();
-        } else if (entry.getEntryKind() == IClasspathEntry.CPE_PROJECT){
-          curPath = getClasspath(JavaCore.create((IProject) res));
-        } else {
-          curPath = res.getLocation().toOSString();
-        }
-      }
-
-      if (cpBuffer.length() == 0) {
-        cpBuffer.append(curPath);
-      } else {
-        cpBuffer.append(PATH_SEPARATOR + curPath);
-      }
-    }
-    return cpBuffer.toString();
   }
 
   /**
@@ -229,10 +229,10 @@ public class JumbleAction implements IObjectActionDelegate, IEditorActionDelegat
         cu = JavaCore.createCompilationUnitFrom(mFile);
       }
       return cu;
+    } else {
+      IFileEditorInput f = (IFileEditorInput) mTargetEditor.getEditorInput();
+      System.err.println(f.getFile());
+      return JavaCore.createCompilationUnitFrom(f.getFile());
     }
-
-    IFileEditorInput f = (IFileEditorInput) mTargetEditor.getEditorInput();
-    System.err.println(f.getFile());
-    return JavaCore.createCompilationUnitFrom(f.getFile());
   }
 }

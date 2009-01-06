@@ -16,7 +16,6 @@
 	<name>jumble-parent</name>
 
 	<modules>
-		<module>jumble-annotations</module>
 		<module>jumble</module>
 		<module>eclipseplugin</module>
 	</modules>
@@ -29,4 +28,20 @@
 			<email>sewer.panda@gmail.com</email>
 		</contributor>
 	</contributors>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.4</version>
+			</plugin>
+		</plugins>
+	</build>
 </project>

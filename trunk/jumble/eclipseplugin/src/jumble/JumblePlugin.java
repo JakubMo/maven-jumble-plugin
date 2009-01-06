@@ -15,19 +15,18 @@ import org.osgi.framework.BundleContext;
 public class JumblePlugin extends AbstractUIPlugin {
 
 	//The shared instance.
-	private static JumblePlugin sPlugin;
+	private static JumblePlugin plugin;
 	
 	/**a
 	 * The constructor.
 	 */
 	public JumblePlugin() {
-		sPlugin = this;
+		plugin = this;
 	}
 
 	/**
 	 * This method is called upon plug-in activation
 	 */
-  @Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 	}
@@ -35,17 +34,16 @@ public class JumblePlugin extends AbstractUIPlugin {
 	/**
 	 * This method is called when the plug-in is stopped
 	 */
-  @Override
 	public void stop(BundleContext context) throws Exception {
 		super.stop(context);
-		sPlugin = null;
+		plugin = null;
 	}
 
 	/**
 	 * Returns the shared instance.
 	 */
 	public static JumblePlugin getDefault() {
-		return sPlugin;
+		return plugin;
 	}
 
 	/**

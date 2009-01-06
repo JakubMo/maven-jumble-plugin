@@ -9,7 +9,12 @@ import jumble.JumblePlugin;
  * Class used to initialize default preference values.
  */
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
-  @Override
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer#initializeDefaultPreferences()
+   */
   public void initializeDefaultPreferences() {
     IPreferenceStore store = JumblePlugin.getDefault().getPreferenceStore();
     store.setDefault(PreferenceConstants.P_ARGS, "");
