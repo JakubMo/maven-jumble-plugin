@@ -1,2 +1,0 @@
-Mutating experiments.Interface
-Score: 100% (INTERFACE)
